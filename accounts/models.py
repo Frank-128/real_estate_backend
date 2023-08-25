@@ -18,10 +18,10 @@ class Account(AbstractUser):
         upload_to="profile_pictures", height_field=40, width_field=50, null=True
     )
     role = models.CharField(max_length=255)
-    updated_at = models.DateTimeField()
+    updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    is_staff = None
-    is_active = None
+    # is_staff = None
+    # is_active = None
 
     class Meta:
         db_table = "accounts"

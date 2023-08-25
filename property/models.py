@@ -1,78 +1,102 @@
+from datetime import datetime
 from django.db import models
 from accounts.models import Account
 
-"""
-The property category i.e residential and commercial
-"""
-
 
 class PropertyCategories(models.Model):
-    category_name = models.CharField(max_length=20)
+
+    """
+    The property category i.e residential and commercial
+    """
+
+    category_name = models.CharField(max_length=20, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(blank=True, null=True)
 
+    objects = models.Manager()
+
     class Meta:
         db_table = "property_categories"
-        # ordering = ['created_at']
-        indexes = [
-            models.Index(fields=['category_name'])
-        ]
+        ordering = ["created_at"]
+        indexes = [models.Index(fields=["category_name"])]
 
     def __str__(self):
-        return self.category_name
+        return f"{self.category_name}"
 
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.updated_at = None
 
-"""
- The types of property eg. house,mansion,villa,office
-"""
+        else:
+            self.updated_at = datetime.now()
+        super().save(*args, **kwargs)
 
 
 class PropertyTypes(models.Model):
+
+    """
+    The different types of a property
+    """
+
     category = models.ForeignKey(
         PropertyCategories, on_delete=models.CASCADE, verbose_name="Property Category"
     )
-    type_name = models.CharField(max_length=20)
+    type_name = models.CharField(max_length=20, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = "property_types"
         # ordering = ['created_at']
-        indexes = [
-            models.Index(fields=['type_name'])
-        ]
+        indexes = [models.Index(fields=["type_name"])]
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.updated_at = None
+        else:
+            self.updated_at = datetime.now()
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.type_name
+        return f"{self.type_name}"
 
-
-"""
- attributes of the property
-"""
+    objects = models.Manager()
 
 
 class Attributes(models.Model):
-    attribute_name = models.CharField(max_length=50)
+
+    """
+    attributes of the property
+    """
+
+    attribute_name = models.CharField(max_length=50,unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = "attributes"
-        ordering = ['created_at']
-        indexes = [
-            models.Index(fields=['attribute_name'])
-        ]
+        ordering = ["created_at"]
+        indexes = [models.Index(fields=["attribute_name"])]
 
     def __str__(self):
-        return self.attribute_name
+        return f"{self.attribute_name}"
 
+    objects = models.Manager()
 
-"""
- Address of the Property
-"""
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.updated_at = None
+
+        else:
+            self.updated_at = datetime.now()
+        super().save(*args, **kwargs)
 
 
 class Address(models.Model):
+    """
+    Address of the Property
+    """
+
     region = models.CharField(max_length=15)
     district = models.CharField(max_length=30)
     street = models.CharField(max_length=30)
@@ -81,22 +105,31 @@ class Address(models.Model):
 
     class Meta:
         db_table = "property_address"
-        ordering = ['created_at']
-        indexes = [
-            models.Index(fields=['region', 'district', 'street'])
-        ]
+        ordering = ["created_at"]
+        indexes = [models.Index(fields=["region", "district", "street"])]
 
     def __str__(self):
-        return self.region
+        return f"{self.region}"
 
+    objects = models.Manager()
 
-"""
-Pictures Models
-"""
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.updated_at = None
+
+        else:
+            self.updated_at = datetime.now()
+        super().save(*args, **kwargs)
 
 
 class PropertyPictures(models.Model):
-    user = models.ForeignKey(Account, on_delete=models.CASCADE, verbose_name="user picture")
+    """
+    Pictures Models
+    """
+
+    user = models.ForeignKey(
+        Account, on_delete=models.CASCADE, verbose_name="user picture"
+    )
     property_picture = models.ImageField(
         upload_to="property_pictures", height_field=40, width_field=50, null=True
     )
@@ -108,15 +141,17 @@ class PropertyPictures(models.Model):
         ordering = ["created_at"]
 
     def __str__(self):
-        return self.created_at
+        return f"{self.created_at}"
 
-
-"""
- Properties Model
-"""
+    objects = models.Manager()
 
 
 class Property(models.Model):
+
+    """
+    Properties Model
+    """
+
     user = models.ForeignKey(
         Account, on_delete=models.CASCADE, verbose_name="property owner"
     )
@@ -134,31 +169,30 @@ class Property(models.Model):
     conditions = models.CharField(max_length=255, null=True)
     utilities = models.CharField(max_length=255, null=True)
     description = models.TextField(max_length=500)
-    pictures = models.ForeignKey(PropertyPictures, on_delete=models.CASCADE, verbose_name="property picture")
-    is_for_sale = models.BooleanField(
-        default=False
+    pictures = models.ForeignKey(
+        PropertyPictures, on_delete=models.CASCADE, verbose_name="property picture",
     )
+    is_for_sale = models.BooleanField(default=False)
     status = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=False)
+    updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = "properties"
-        ordering = ['created_at']
-        indexes = [
-            models.Index(fields=['user', 'address'])
-        ]
+        ordering = ["created_at"]
+        indexes = [models.Index(fields=["user", "address"])]
 
     def __str__(self):
-        return self.estate_name
+        return f"{self.estate_name}"
 
-
-"""
- Attributes of the specific property
-"""
+    objects = models.Manager()
 
 
 class PropertyAttributes(models.Model):
+    """
+    Attributes of the specific property
+    """
+
     property = models.ForeignKey(
         Property, on_delete=models.CASCADE, verbose_name="Property Name"
     )
@@ -171,10 +205,10 @@ class PropertyAttributes(models.Model):
 
     class Meta:
         db_table = "property_attributes"
-        ordering = ['created_at']
-        indexes = [
-            models.Index(fields=['attribute'])
-        ]
+        ordering = ["created_at"]
+        indexes = [models.Index(fields=["attribute"])]
 
     def __str__(self):
-        return f'{self.property.estate_name}'
+        return f"{self.property}"
+
+    objects = models.Manager()
